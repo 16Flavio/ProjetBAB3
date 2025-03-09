@@ -19,3 +19,11 @@ QStackedWidget, QTextBrowser, QListWidget {
     border: 1px solid #4a4a4a;
     border-radius: 5px;
 }
+/* Style pour les labels FPS */
+QLabel#fpsLabelManual, QLabel#fpsLabelAuto {
+    color: white;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 150);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
