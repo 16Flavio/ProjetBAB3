@@ -1,7 +1,12 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from main_window import Ui_MainWindow
 import sys
 import os
+
+from pathlib import Path
+
+# Chemin absolu vers l'icône
+ressources_path = Path(__file__).parent.parent / "ressources"
 
 # Si 1ère fois que main_window est import depuis Qt Designer, il faut :
 # - Changer le chemin de l'icone de l'app comme ceci
@@ -29,6 +34,12 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.menu_visible = True
 
     def toggle_menu(self):
+        icon1 = QtGui.QIcon()
+        if self.menu_visible:
+            icon1.addPixmap(QtGui.QPixmap( str(ressources_path) + "/toggleMenuClosed.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        else:
+            icon1.addPixmap(QtGui.QPixmap( str(ressources_path) + "/toggleMenuOpened.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.toggleBtn.setIcon(icon1)
         self.menu_visible = not self.menu_visible
         self.sideBar.setFixedWidth(self.sidebar_width if self.menu_visible else 0)
 

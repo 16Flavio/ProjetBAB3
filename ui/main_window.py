@@ -31,7 +31,7 @@ class Ui_MainWindow(object):
         self.toggleBtn.setMaximumSize(QtCore.QSize(50, 16777215))
         self.toggleBtn.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap( str(ressources_path) + "/toggleMenu.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap( str(ressources_path) + "/toggleMenuOpened.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toggleBtn.setIcon(icon1)
         self.toggleBtn.setIconSize(QtCore.QSize(32, 32))
         self.toggleBtn.setObjectName("toggleBtn")
