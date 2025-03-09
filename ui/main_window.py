@@ -118,6 +118,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.waypointsZone.sizePolicy().hasHeightForWidth())
         self.waypointsZone.setSizePolicy(sizePolicy)
         self.waypointsZone.setObjectName("waypointsZone")
+        self.waypointsZone.setMinimumSize(QtCore.QSize(400,0))
         self.gridLayout_2.addWidget(self.waypointsZone, 0, 2, 1, 1)
         self.videoFeedAuto = QtWidgets.QLabel(self.autoPage)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)

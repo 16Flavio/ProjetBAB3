@@ -30,7 +30,7 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.autoMode.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         
         # Initialisation
-        self.sidebar_width = 200
+        self.sidebar_width = self.sideBar.width()
         self.menu_visible = True
 
     def toggle_menu(self):

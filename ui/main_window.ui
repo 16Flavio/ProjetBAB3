@@ -38,7 +38,7 @@
       </property>
       <property name="icon">
        <iconset>
-        <normaloff>../ressources/toggleMenu.png</normaloff>../ressources/toggleMenu.png</iconset>
+        <normaloff>../ressources/toggleMenuOpened.jpg</normaloff>../ressources/toggleMenuOpened.jpg</iconset>
       </property>
       <property name="iconSize">
        <size>
@@ -97,7 +97,7 @@
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="manualPage">
          <layout class="QGridLayout" name="gridLayout">
@@ -187,6 +187,12 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>400</width>
+              <height>0</height>
+             </size>
             </property>
            </widget>
           </item>
