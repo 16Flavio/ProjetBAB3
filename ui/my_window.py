@@ -8,6 +8,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
 from core.video_thread import VideoThread
+from core.serial_thread import SerialThread
 
 from pathlib import Path
 
@@ -53,6 +54,9 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Connecter le signal FPS
         self.video_thread.fps_signal.connect(self.update_fps)
 
+        # Initialisation pour les données en série
+        self.init_serial()
+
     # Fonction liée au menu
     def toggle_menu(self):
         icon1 = QtGui.QIcon()
@@ -64,7 +68,7 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.menu_visible = not self.menu_visible
         self.sideBar.setFixedWidth(self.sidebar_width if self.menu_visible else 0)
 
-    # Fonction liée au flux vidéo
+    # Fonctions liées au flux vidéo
     def init_video(self):
         # Créer le thread vidéo
         self.video_thread = VideoThread(src=0)  # src='udp://@0.0.0.0:11111' pour le port par défaut, src=0 pour la webcam et src=1 si je branche une seconde webcam
@@ -110,6 +114,48 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         text = f"FPS: {fps:.1f}"
         self.fps_label_manual.setText(text)
         self.fps_label_auto.setText(text)
+
+    # Fonctions liées au données en série
+    def init_serial(self):
+        """Initialise la connexion série avec le récepteur ELRS"""
+        try:
+            # Adapter le port selon le système (COM3, /dev/ttyUSB0, etc.)
+            self.serial_thread = SerialThread(port='COM3', baudrate=115200)
+            self.serial_thread.data_received.connect(self.update_telemetry)
+            self.serial_thread.error_signal.connect(self.handle_serial_error)
+            self.serial_thread.start()
+            
+        except Exception as e:
+            self.logViewer.addItem(f"ERREUR SÉRIE: {str(e)}")
+    def update_telemetry(self, data):
+        """Met à jour les données télémétriques dans les deux modes"""
+        try:
+            # Formater les données (exemple de format: "ALT:100m;SPD:30km/h;SAT:12")
+            formatted_data = self.parse_telemetry(data)
+            
+            self.teleViewer.setPlainText(formatted_data)
+            self.teleViewerAuto.setPlainText(formatted_data)
+            
+        except Exception as e:
+            self.logViewer.addItem(f"ERREUR TÉLÉMÉTRIE: {str(e)}")
+    def parse_telemetry(self, raw_data):
+        """Convertit les données brutes en format lisible"""
+        # Adapter selon le format du récepteur
+        parts = raw_data.split(';')
+        formatted = ""
+        for part in parts:
+            if ':' in part:
+                key, value = part.split(':', 1)
+                formatted += f"{key.strip()}: {value.strip()}\n"
+        return formatted or "Aucune donnée reçue"
+    def handle_serial_error(self, message):
+        self.logViewer.addItem(f"ERREUR: {message}")
+        self.serial_thread.stop()
+    def closeEvent(self, event):
+        # Ajouter la fermeture série
+        self.serial_thread.stop()
+        self.video_thread.stop()
+        event.accept()
 
 app = QtWidgets.QApplication(sys.argv)
 

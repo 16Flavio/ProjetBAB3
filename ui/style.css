@@ -27,3 +27,11 @@ QLabel#fpsLabelManual, QLabel#fpsLabelAuto {
     padding: 2px 5px;
     border-radius: 3px;
 }
+
+QTextBrowser {
+    background-color: #1a1a1a;
+    color: #00ff00;
+    font-family: 'Courier New';
+    border: 1px solid #333;
+    padding: 5px;
+}
