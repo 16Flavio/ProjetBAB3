@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Settings</class>
+ <widget class="QDialog" name="Settings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>416</width>
+    <height>502</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../ressources/AppIcon.png</normaloff>../ressources/AppIcon.png</iconset>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="4" column="0">
+    <widget class="QLabel" name="right">
+     <property name="text">
+      <string>Droite</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="takeoff">
+     <property name="text">
+      <string>Décoller</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="land">
+     <property name="text">
+      <string>Atterir</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="left">
+     <property name="text">
+      <string>Gauche</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="backward">
+     <property name="text">
+      <string>Reculer</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="forward">
+     <property name="text">
+      <string>Avancer</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="KeyInputLineEdit" name="takeoffInput"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="KeyInputLineEdit" name="landInput"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="KeyInputLineEdit" name="forwardInput"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="KeyInputLineEdit" name="backwardInput"/>
+   </item>
+   <item row="4" column="1">
+    <widget class="KeyInputLineEdit" name="rightInput"/>
+   </item>
+   <item row="5" column="1">
+    <widget class="KeyInputLineEdit" name="leftInput"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeyInputLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>settings.py</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from main_window import Ui_MainWindow
 import sys
-import os
+import os, json
 
 # Obtenir le chemin absolu du répertoire parent
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -9,6 +9,7 @@ sys.path.insert(0, project_root)
 
 from core.video_thread import VideoThread
 from core.serial_thread import SerialThread
+from config.settings import SettingsDialog
 
 from pathlib import Path
 
@@ -56,6 +57,9 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialisation pour les données en série
         self.init_serial()
+
+        # Initialisation pour les settings
+        self.touchConfig.clicked.connect(self.configure_keys)
 
     # Fonction liée au menu
     def toggle_menu(self):
@@ -156,6 +160,52 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.serial_thread.stop()
         self.video_thread.stop()
         event.accept()
+
+    # Fonctions liées aux touches
+    def load_key_bindings(self):
+        try:
+            with open('key_bindings.json', 'r') as f:
+                return json.load(f)
+        except:
+            return {
+                'takeoff': 'T',
+                'land': 'L',
+                'forward': 'Z',
+                'backward': 'S',
+                'right': 'D',
+                'left': 'Q'
+            }
+
+    def configure_keys(self):
+        dialog = SettingsDialog(self)
+        if dialog.exec_():
+            self.key_bindings = dialog.get_current_keys()
+
+    def keyPressEvent(self, event):
+        key = None
+        if event.key() == QtCore.Qt.Key_Space:
+            key = "SPACE"
+        elif event.modifiers() == QtCore.Qt.ControlModifier:
+            key = "CTRL"
+        else:
+            key = event.text().upper()
+
+        command = None
+        if key == self.key_bindings.get('takeoff'):
+            command = "TAKEOFF"
+        elif key == self.key_bindings.get('land'):
+            command = "LAND"
+        elif key == self.key_bindings.get('forward'):
+            command = "FORWARD"
+        elif key == self.key_bindings.get('backward'):
+            command = "BACKWARD"
+        elif key == self.key_bindings.get('right'):
+            command = "RIGHT"
+        elif key == self.key_bindings.get('left'):
+            command = "LEFT"
+
+        if command:
+            self.serial_thread.send(command)
 
 app = QtWidgets.QApplication(sys.argv)
 

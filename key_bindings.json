@@ -1,0 +1,8 @@
+{
+    "takeoff": "SPACE",
+    "land": "CTRL",
+    "forward": "Z",
+    "backward": "S",
+    "right": "D",
+    "left": "Q"
+}
