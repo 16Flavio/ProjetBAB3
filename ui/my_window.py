@@ -32,6 +32,15 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         super(myWindow, self).__init__()
         self.setupUi(self)
 
+        # Initialiser les key_bindings
+        # Désactiver le focus pour tous les widgets enfants
+        for child in self.centralwidget.findChildren(QtWidgets.QWidget):
+            child.setFocusPolicy(QtCore.Qt.NoFocus)
+        
+        self.centralwidget.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.centralwidget.setFocus()
+        self.key_bindings = self.load_key_bindings()
+
         # Connexions
         self.toggleBtn.clicked.connect(self.toggle_menu)
         self.manualMode.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
@@ -60,6 +69,10 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialisation pour les settings
         self.touchConfig.clicked.connect(self.configure_keys)
+
+    def focusInEvent(self, event):
+        self.logViewer.addItem(f"[FOCUS] Focus reçu par : {self.focusWidget()}")
+        super().focusInEvent(event)
 
     # Fonction liée au menu
     def toggle_menu(self):
@@ -123,14 +136,15 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def init_serial(self):
         """Initialise la connexion série avec le récepteur ELRS"""
         try:
-            # Adapter le port selon le système (COM3, /dev/ttyUSB0, etc.)
             self.serial_thread = SerialThread(port='COM3', baudrate=115200)
-            self.serial_thread.data_received.connect(self.update_telemetry)
             self.serial_thread.error_signal.connect(self.handle_serial_error)
             self.serial_thread.start()
-            
+            self.logViewer.addItem("[SÉRIE] Thread série démarré")
+                
         except Exception as e:
-            self.logViewer.addItem(f"ERREUR SÉRIE: {str(e)}")
+            self.logViewer.addItem(f"[ERREUR SÉRIE] {str(e)}")
+            self.serial_thread = None  # Permet de désactiver les envois
+
     def update_telemetry(self, data):
         """Met à jour les données télémétriques dans les deux modes"""
         try:
@@ -176,36 +190,65 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 'left': 'Q'
             }
 
+    def update_keys(self, new_keys):
+        self.key_bindings = new_keys
+        self.logViewer.addItem("[CONFIG] Mise à jour dynamique réussie !")
+
     def configure_keys(self):
         dialog = SettingsDialog(self)
-        if dialog.exec_():
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.key_bindings = dialog.get_current_keys()
-
+            self.logViewer.addItem("[CONFIG] Configuration mise à jour")
+            
+            # Forcer le focus et récupérer le clavier
+            self.centralwidget.grabKeyboard()
+            self.centralwidget.setFocus()
+    
     def keyPressEvent(self, event):
-        key = None
-        if event.key() == QtCore.Qt.Key_Space:
-            key = "SPACE"
-        elif event.modifiers() == QtCore.Qt.ControlModifier:
-            key = "CTRL"
-        else:
-            key = event.text().upper()
+        try:
+            #print("DEBUG: keyPressEvent déclenché!")  # Log dans la console
+            #self.logViewer.addItem("[DEBUG] Événement clavier détecté")
 
-        command = None
-        if key == self.key_bindings.get('takeoff'):
-            command = "TAKEOFF"
-        elif key == self.key_bindings.get('land'):
-            command = "LAND"
-        elif key == self.key_bindings.get('forward'):
-            command = "FORWARD"
-        elif key == self.key_bindings.get('backward'):
-            command = "BACKWARD"
-        elif key == self.key_bindings.get('right'):
-            command = "RIGHT"
-        elif key == self.key_bindings.get('left'):
-            command = "LEFT"
+            # Vérifier si on est en mode manuel
+            if self.stackedWidget.currentIndex() != 0:
+                super().keyPressEvent(event)
+                return  # Ne rien faire si on est en mode auto
+            
+            key = None
+            if event.key() == QtCore.Qt.Key_Space:
+                key = "SPACE"
+            elif event.modifiers() == QtCore.Qt.ControlModifier:
+                key = "CTRL"
+            else:
+                key = event.text().upper()
 
-        if command:
-            self.serial_thread.send(command)
+            # Afficher la touche pressée et la configuration actuelle
+            #self.logViewer.addItem(f"[DEBUG] Touche pressée : {key}")
+            #self.logViewer.addItem(f"[DEBUG] Configuration actuelle : {self.key_bindings}")
+
+            command = None
+            if key == self.key_bindings.get('takeoff'):
+                command = "TAKEOFF"
+            elif key == self.key_bindings.get('land'):
+                command = "LAND"
+            elif key == self.key_bindings.get('forward'):
+                command = "FORWARD"
+            elif key == self.key_bindings.get('backward'):
+                command = "BACKWARD"
+            elif key == self.key_bindings.get('right'):
+                command = "RIGHT"
+            elif key == self.key_bindings.get('left'):
+                command = "LEFT"
+
+            if command:
+                try:
+                    self.serial_thread.send(command)  # Non bloquant
+                    self.logViewer.addItem(f"[MANUEL] {command} envoyé")
+                except Exception as e:
+                    self.logViewer.addItem(f"[ERREUR] {str(e)}")
+            super().keyPressEvent(event)  # Toujours appeler la méthode parente
+        except Exception as e:
+            self.logViewer.addItem(f"[ERREUR CRITIQUE] {str(e)}")
 
 app = QtWidgets.QApplication(sys.argv)
 

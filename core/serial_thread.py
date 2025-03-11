@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 class SerialThread(QtCore.QThread):
     data_received = QtCore.pyqtSignal(str)
     error_signal = QtCore.pyqtSignal(str)
+    command_queue = QtCore.pyqtSignal(str)
 
     def __init__(self, port, baudrate=115200):
         super().__init__()
@@ -11,6 +12,7 @@ class SerialThread(QtCore.QThread):
         self.baudrate = baudrate
         self.running = True
         self.ser = None
+        self.commands = []  # Liste des commandes à envoyer
 
     def run(self):
         try:
@@ -23,10 +25,21 @@ class SerialThread(QtCore.QThread):
                 timeout=1
             )
             
-            while self.running and self.ser.is_open:
+            while self.running:
+                # Envoyer les commandes de la file d'attente
+                if self.commands:
+                    cmd = self.commands.pop(0)
+                    try:
+                        self.ser.write(f"{cmd}\n".encode())
+                    except Exception as e:
+                        self.error_signal.emit(f"Erreur envoi: {str(e)}")
+                
+                # Lire les données (non bloquant)
                 data = self.ser.readline().decode('utf-8').strip()
                 if data:
                     self.data_received.emit(data)
+                
+                QtCore.QThread.msleep(10)  # Réduire la charge CPU
 
         except Exception as e:
             self.error_signal.emit(f"Erreur série: {str(e)}")
@@ -39,3 +52,6 @@ class SerialThread(QtCore.QThread):
         if self.ser and self.ser.is_open:
             self.ser.close()
         self.wait()
+    def send(self, command):
+        """Ajoute une commande à la file d'attente (thread-safe)"""
+        self.commands.append(command)

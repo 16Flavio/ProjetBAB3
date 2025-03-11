@@ -19,8 +19,8 @@ class SettingsDialog(QtWidgets.QDialog, Ui_Settings):
         self.buttonBox.rejected.connect(self.reject)
     def on_accept(self):
         """Sauvegarde les touches et ferme la fenêtre"""
-        self.save_keys()
-        self.accept()  # Ferme la fenêtre avec le statut "Accepted"
+        if self.save_keys():
+            self.accept()  # Ferme la fenêtre avec le statut "Accepted"
     def setup_inputs(self):
         inputs = {
             'takeoff': self.takeoffInput,
@@ -34,7 +34,7 @@ class SettingsDialog(QtWidgets.QDialog, Ui_Settings):
         for key, widget in inputs.items():
             widget.setText(self.keys.get(key, ""))
             widget.setReadOnly(True)
-            widget.mousePressEvent = lambda event, w=widget: self.start_capture(w)
+            widget.mousePressEvent = lambda e, w=widget: self.start_capture(w)
 
     def start_capture(self, widget):
         widget.grabKeyboard()
@@ -66,9 +66,12 @@ class SettingsDialog(QtWidgets.QDialog, Ui_Settings):
 
     def save_keys(self):
         new_keys = self.get_current_keys()
-        if len(set(new_keys.values())) != len(new_keys):
+        """if len(set(new_keys.values())) != len(new_keys):
             QtWidgets.QMessageBox.warning(self, "Erreur", "Touches en conflit !")
-            return
+            return False"""
 
         with open('key_bindings.json', 'w') as f:
             json.dump(new_keys, f, indent=4)
+            f.flush()
+        
+        return True
