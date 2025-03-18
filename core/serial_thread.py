@@ -53,5 +53,8 @@ class SerialThread(QtCore.QThread):
             self.ser.close()
         self.wait()
     def send(self, command):
-        """Ajoute une commande à la file d'attente (thread-safe)"""
-        self.commands.append(command)
+        """Ajoute une commande en tête de file si urgente"""
+        if command in ["STOP_AUTO", "LAND"]:
+            self.commands.insert(0, command)  # Priorité haute
+        else:
+            self.commands.append(command)

@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: crsf-parser
+Version: 0.3.2
+Summary: A package to parse and create CRSF (Crossfire) frames, developed primarily to interoperate with ExpressLRS
+Home-page: https://github.com/AlessioMorale/crsf_parser
+License: MIT
+Author: Alessio Morale
+Author-email: alessiomorale@gmail.com
+Requires-Python: >=3.8,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: construct (>=2.10,<3.0)
+Requires-Dist: construct-typing (>=0.5,<0.6)
+Project-URL: Repository, https://github.com/AlessioMorale/crsf_parser
+Description-Content-Type: text/x-rst
+
+

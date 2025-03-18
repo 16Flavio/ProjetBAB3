@@ -9,6 +9,7 @@ sys.path.insert(0, project_root)
 
 from core.video_thread import VideoThread
 from core.serial_thread import SerialThread
+from core.utils import WaypointDialog
 from config.settings import SettingsDialog
 
 from pathlib import Path
@@ -69,6 +70,16 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialisation pour les settings
         self.touchConfig.clicked.connect(self.configure_keys)
+
+        # Nouvelle connexion pour les waypoints
+        self.addWaypoint.clicked.connect(self.add_waypoint)
+        self.startMission.clicked.connect(self.start_mission)
+        self.delWaypoint.clicked.connect(self.delete_waypoint)
+        self.finishMission.clicked.connect(self.stop_mission)
+        # Ajouter un état de mission
+        self.mission_active = False
+        # Liste pour stocker les waypoints
+        self.waypoints = []
 
     def focusInEvent(self, event):
         self.logViewer.addItem(f"[FOCUS] Focus reçu par : {self.focusWidget()}")
@@ -249,6 +260,54 @@ class myWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             super().keyPressEvent(event)  # Toujours appeler la méthode parente
         except Exception as e:
             self.logViewer.addItem(f"[ERREUR CRITIQUE] {str(e)}")
+
+    def add_waypoint(self):
+        dialog = WaypointDialog(self)
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            lat = dialog.latitude.text()
+            lon = dialog.longitude.text()
+            alt = dialog.altitude.value()
+            
+            if lat and lon:
+                waypoint_str = f"Lat: {lat}, Lon: {lon}, Alt: {alt}m"
+                self.waypointsZone.addItem(waypoint_str)
+                self.waypoints.append((lat, lon, alt))
+                self.logViewer.addItem(f"[AUTO] Waypoint ajouté : {waypoint_str}")
+
+    def delete_waypoint(self):
+        selected = self.waypointsZone.currentRow()
+        if selected >= 0:
+            self.waypointsZone.takeItem(selected)
+            del self.waypoints[selected]
+
+    def start_mission(self):
+        if not self.waypoints:
+            self.logViewer.addItem("[ERREUR] Aucun waypoint défini !")
+            return
+        
+        self.mission_active = True
+        self.logViewer.addItem("[AUTO] Début de la mission...")
+        
+        # Envoi des waypoints au FC
+        for idx, (lat, lon, alt) in enumerate(self.waypoints):
+            if not self.mission_active:  # Vérifier si annulation
+                break
+            command = f"WAYPOINT,{lat},{lon},{alt}"
+            self.serial_thread.send(command)
+            self.logViewer.addItem(f"[AUTO] Envoi waypoint {idx+1}: {command}")
+        
+        if self.mission_active:
+            self.serial_thread.send("START_AUTO")
+            self.logViewer.addItem("[AUTO] Mission démarrée")
+
+    def stop_mission(self):
+        if self.mission_active:
+            self.mission_active = False
+            self.serial_thread.send("STOP_AUTO")
+            self.logViewer.addItem("[AUTO] Mission arrêtée - Atterrissage d'urgence")
+            self.serial_thread.send("LAND")  # Sécurité supplémentaire
+        else:
+            self.logViewer.addItem("[AUTO] Aucune mission active")
 
 app = QtWidgets.QApplication(sys.argv)
 
